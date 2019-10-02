@@ -360,6 +360,24 @@ start_pipeline (void)
   g_signal_connect (webrtc1, "on-ice-candidate",
       G_CALLBACK (send_ice_candidate_message), NULL);
 
+  // ################### SET FEC #############################
+  GstWebRTCRTPTransceiver *trans;
+  GArray *transceivers;
+
+  /* A transceiver has already been created when a sink pad was
+    * requested on the sending webrtcbin */
+
+  g_signal_emit_by_name (webrtc1, "get-transceivers", &transceivers);
+
+  trans = g_array_index (transceivers, GstWebRTCRTPTransceiver *, 0);
+
+  g_object_set (trans, "fec-type", GST_WEBRTC_FEC_TYPE_ULP_RED,
+                "fec-percentage", 100, NULL);
+
+  g_array_unref (transceivers);
+
+  // ########## FINISHED SET FEC #############################
+
   gst_element_set_state (pipe1, GST_STATE_READY);
 
   g_signal_emit_by_name (webrtc1, "create-data-channel", "channel", NULL,
